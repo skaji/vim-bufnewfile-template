@@ -66,7 +66,6 @@ sub pm {
         package $file;
         use strict;
         use warnings;
-        our \$VERSION = "0.001";
 
 
         1;
@@ -104,6 +103,7 @@ public class Main {
 use strict;
 use warnings;
 use utf8;
+use 5.010;
 
 
 @@ c
@@ -134,8 +134,8 @@ int main(void) {
     <meta charset="utf-8">
     <title>hoge</title>
     <!--
-        <script src="/script.js"></script>
-        <link rel="stylesheet" href="/css.css">
+        <script src="script.js"></script>
+        <link href="css.css" rel="stylesheet" />
     -->
 </head>
 <body>
