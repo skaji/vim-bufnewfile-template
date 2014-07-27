@@ -16,29 +16,34 @@ sub main {
     ( my $file = shift ) =~ /\.([^.]+)$/;
     my $suffix = $1 || "";
 
+    my $data;
     if (my $code = $lookup{$suffix}) {
         print $code->($file, $suffix);
-    } elsif (my $data = get_data_section($suffix)) {
+    } elsif ($data = get_data_section($suffix)) {
+        print $data;
+    } elsif ($data = get_data_section($file)) {
         print $data;
     } else {
         print "";
     }
 }
 
+my %data;
 sub get_data_section {
-    my $suffix = shift;
+    my $want = shift;
     # taken from Data::Section::Simple
-    my $data = do { local $/; <DATA> };
-    close DATA;
-    my @data = split /^@@\s+(.+?)\s*\n/m, $data;
-    shift @data;
-    while (@data) {
-        my ($name, $content) = splice @data, 0, 2;
-        next if $name ne $suffix;
-        $content =~ s/(\n{2})\z/\n/xsm;
-        return $content;
+    unless (%data) {
+        my $data = do { local $/; <DATA> };
+        close DATA;
+        my @data = split /^@@\s+(.+?)\s*\n/m, $data;
+        shift @data;
+        while (@data) {
+            my ($name, $content) = splice @data, 0, 2;
+            $content =~ s/\n{2}\z/\n/xsm;
+            $data{$name} = $content;
+        }
     }
-    return "";
+    return $data{$want} || "";
 }
 
 sub heredoc {
@@ -90,7 +95,7 @@ sub hpp {
 __DATA__
 
 @@ java
-//import java.util.*;
+// import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
