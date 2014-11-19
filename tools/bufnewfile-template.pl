@@ -98,18 +98,17 @@ __DATA__
 // import java.util.*;
 
 public class Main {
-    public static void main(String[] args) {
+  public static void main(String[] args) {
 
-    }
+  }
 }
 
 @@ pl
 #!/usr/bin/env perl
-use strict;
-use warnings;
+use 5.20.0;
 use utf8;
-use 5.010;
-
+use warnings;
+use experimental 'signatures', 'postderef';
 
 @@ c
 #include <stdio.h>
@@ -136,12 +135,12 @@ int main(void) {
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="utf-8">
-    <title>hoge</title>
-    <!--
-        <script src="script.js"></script>
-        <link href="css.css" rel="stylesheet" />
-    -->
+  <meta charset="utf-8">
+  <title>hoge</title>
+  <!--
+    <script src="script.js"></script>
+    <link href="css.css" rel="stylesheet" />
+  -->
 </head>
 <body>
 
