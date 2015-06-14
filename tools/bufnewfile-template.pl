@@ -71,6 +71,7 @@ sub pm {
         package $file;
         use strict;
         use warnings;
+        use utf8;
 
 
         1;
@@ -105,10 +106,9 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.20.0;
+use 5.14.0;
 use utf8;
 use warnings;
-use experimental 'signatures', 'postderef';
 
 @@ c
 #include <stdio.h>
