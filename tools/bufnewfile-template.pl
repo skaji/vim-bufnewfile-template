@@ -106,9 +106,11 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.14.0;
+use 5.22.0;
 use utf8;
 use warnings;
+use experimental qw(postderef refaliasing signatures);
+
 
 @@ c
 #include <stdio.h>
