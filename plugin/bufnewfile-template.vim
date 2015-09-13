@@ -10,4 +10,4 @@ if !executable(s:bufnewfile_template_pl)
     finish
 endif
 
-exec 'autocmd BufNewFile *.* :%:!' . s:bufnewfile_template_pl . " '%'"
+exec 'autocmd BufNewFile * :%:!' . s:bufnewfile_template_pl . " '%'"

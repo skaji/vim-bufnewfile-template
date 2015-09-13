@@ -19,9 +19,9 @@ sub main {
     my $data;
     if (my $code = $lookup{$suffix}) {
         print $code->($file, $suffix);
-    } elsif ($data = get_data_section($suffix)) {
-        print $data;
     } elsif ($data = get_data_section($file)) {
+        print $data;
+    } elsif ($data = get_data_section($suffix)) {
         print $data;
     } else {
         print "";
@@ -96,7 +96,7 @@ sub hpp {
 __DATA__
 
 @@ java
-// import java.util.*;
+import java.util.*;
 
 public class Main {
   public static void main(String[] args) {
@@ -107,13 +107,16 @@ public class Main {
 @@ pl
 #!/usr/bin/env perl
 use 5.22.0;
-use utf8;
 use warnings;
-use experimental qw(postderef refaliasing signatures);
+use experimental 'signatures', 'postderef';
 
 
 @@ p6
 #!/usr/bin/env perl6
+use v6;
+
+
+@@ pm6
 use v6;
 
 
@@ -134,7 +137,6 @@ using namespace std;
 /* int main(int argc, char *argv[]) { */
 int main(void) {
 
-
   return 0;
 }
 
@@ -145,11 +147,16 @@ int main(void) {
   <meta charset="utf-8">
   <title>hoge</title>
   <!--
-    <script src="script.js"></script>
-    <link href="css.css" rel="stylesheet" />
+  <script src="script.js"></script>
+  <link href="css.css" rel="stylesheet" />
   -->
 </head>
 <body>
+  <!--
+  <ul>
+    <li></li>
+  </ul>
+  -->
 
 </body>
 </html>
@@ -170,3 +177,24 @@ done_testing;
 @@ py
 #!/usr/bin/env python
 
+@@ fabfile.py
+from fabric.api import *
+
+@task
+def hello():
+    run("echo %s" % "hello")
+
+@@ Dockerfile
+FROM ubuntu:14.04
+MAINTAINER Shoichi Kaji <skaji@cpan.org>
+
+RUN locale-gen en_US en_US.UTF-8
+RUN ln -sf /usr/share/zoneinfo/Japan /etc/localtime
+RUN dpkg-reconfigure locales
+
+RUN apt-get update -y
+RUN env DEBIAN_FRONTEND=noninteractive \
+    apt-get upgrade -y
+RUN env DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y build-essential wget tar git bzip2 curl libssl-dev
+RUN apt-get clean -y
