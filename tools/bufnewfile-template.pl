@@ -188,12 +188,12 @@ done_testing;
 from fabric.api import *
 import os
 
-if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
+if os.path.isfile(os.path.expanduser(env.ssh_config_path)):
     env.use_ssh_config = True
 
 @task
 def hello():
-    run("echo %s" % "hello")
+    run("echo {msg}".format(msg="hello"))
 
 @@ Dockerfile
 FROM ubuntu:14.04
