@@ -186,6 +186,10 @@ done_testing;
 @@ fabfile.py
 # coding: utf-8
 from fabric.api import *
+import os
+
+if env.ssh_config_path and os.path.isfile(os.path.expanduser(env.ssh_config_path)):
+    env.use_ssh_config = True
 
 @task
 def hello():
