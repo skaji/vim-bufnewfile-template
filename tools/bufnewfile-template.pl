@@ -6,6 +6,7 @@ binmode STDOUT, ":utf8";
 
 my %lookup = (
     pm  => \&pm,
+    pm6 => \&pm,
     h   => \&hpp,
     hpp => \&hpp,
 );
@@ -66,8 +67,10 @@ sub pm {
         $file = File::Spec->catfile(Cwd::getcwd(), $file);
     }
     $file =~ s{.*/lib/}{} or $file =~ s{.*/([^/]+)}{$1};
-    $file =~ s{/}{::}g; $file =~ s{\.pm$}{};
-    return heredoc qq{
+    $file =~ s{/}{::}g;
+    my $is_pm6 = $file =~ /pm6$/;
+    $file =~ s{\.pm6?$}{};
+    my $pm = heredoc qq{
         package $file;
         use strict;
         use warnings;
@@ -76,6 +79,12 @@ sub pm {
 
         1;
     };
+    my $pm6 = heredoc qq{
+        use v6;
+        unit class $file;
+
+    };
+    $is_pm6 ? $pm6 : $pm;
 }
 
 sub hpp {
@@ -106,17 +115,13 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.22.0;
+use 5.14.0;
 use warnings;
-use experimental 'signatures', 'postderef';
+use utf8;
 
 
 @@ p6
 #!/usr/bin/env perl6
-use v6;
-
-
-@@ pm6
 use v6;
 
 
@@ -176,8 +181,10 @@ done_testing;
 
 @@ py
 #!/usr/bin/env python
+# coding: utf-8
 
 @@ fabfile.py
+# coding: utf-8
 from fabric.api import *
 
 @task
