@@ -2,13 +2,17 @@
 use strict;
 use warnings;
 use utf8;
+use File::Basename qw(basename dirname);
+use Cwd 'abs_path';
 binmode STDOUT, ":utf8";
 
 my %lookup = (
     pm  => \&pm,
     pm6 => \&pm,
-    h   => \&hpp,
-    hpp => \&hpp,
+    h   => \&h,
+    hpp => \&h,
+    t   => \&t,
+    "CMakeLists.txt" => \&cmake,
 );
 
 main(@ARGV); exit;
@@ -16,9 +20,10 @@ main(@ARGV); exit;
 sub main {
     ( my $file = shift ) =~ /\.([^.]+)$/;
     my $suffix = $1 || "";
+    my $basename = basename $file;
 
     my $data;
-    if (my $code = $lookup{$suffix}) {
+    if (my $code = $lookup{$suffix} || $lookup{$basename}) {
         print $code->($file, $suffix);
     } elsif ($data = get_data_section($file)) {
         print $data;
@@ -47,62 +52,95 @@ sub get_data_section {
     return $data{$want} || "";
 }
 
-sub heredoc {
-    my $string = shift;
-    $string =~ s/\A\n//xsm;
-    $string =~ s/[ \t]*\z//xsm;
-    if ($string =~ m/\A ([ \t]+) /xsm) {
-        my $padding = length $1;
-        $string =~ s/^ ([^\n]{$padding}) //gxsm;
-    }
-    return $string;
+sub template {
+    my ($name, $arg) = @_;
+    my $data = get_data_section($name);
+    $data =~ s/
+        \{\{
+            \s* ([^\s\}]+) \s*
+        \}\}
+    /$arg->{$1} || die "Missing '$1' param in '$name' template" /exg;
+    $data;
 }
 
 sub pm {
     my $file = shift;
-    require Cwd;
-    require File::Spec;
     $file = glob $file; # resolve ~
-    if (!File::Spec->file_name_is_absolute($file)) {
-        $file = File::Spec->catfile(Cwd::getcwd(), $file);
-    }
+    $file = abs_path($file);
     $file =~ s{.*/lib/}{} or $file =~ s{.*/([^/]+)}{$1};
     $file =~ s{/}{::}g;
-    my $is_pm6 = $file =~ /pm6$/;
+    my $type = $file =~ /pm6$/ ? "pm6" : "pm";
     $file =~ s{\.pm6?$}{};
-    my $pm = heredoc qq{
-        package $file;
-        use strict;
-        use warnings;
-        use utf8;
-
-
-        1;
-    };
-    my $pm6 = heredoc qq{
-        use v6;
-        unit class $file;
-
-    };
-    $is_pm6 ? $pm6 : $pm;
+    template($type => { name => $file });
+}
+sub t {
+    my $file = shift;
+    $file = glob $file; # resolve ~
+    $file = abs_path($file);
+    my $is_perl6;
+    my $pwd = dirname($file);
+    while ($pwd ne "/") {
+        if (grep { -f "$pwd/$_" } "META6.json", "META.info") {
+            $is_perl6 = 1;
+            last;
+        } else {
+            $pwd = abs_path("$pwd/..");
+        }
+    }
+    get_data_section( $is_perl6 ? "t6" : "t" );
 }
 
-sub hpp {
+sub h {
     my $file = shift;
-    require File::Basename;
-    my $basename = File::Basename::basename($file);
-    $basename =~ s/\.[^.]+$//;
+    my $basename = basename($file);
+    $basename =~ s/\.([^.]+)$//;
+    my $suffix = ($1 || "") eq "h" ? "H" : "HPP";
     $basename = uc $basename;
-    return heredoc qq{
-        #ifndef ${basename}_H_
-        #define ${basename}_H_
+    template("h" => { name => "${basename}_${suffix}_"});
+}
 
-
-        #endif
-    };
+sub cmake {
+    my $file = shift;
+    my $dir = basename( dirname( abs_path($file) ) );
+    template( "CMakeLists.txt" => { name => $dir } );
 }
 
 __DATA__
+
+@@ h
+#ifndef {{ name }}
+#define {{ name }}
+
+
+#endif
+
+@@ pm
+package {{ name }};
+use strict;
+use warnings;
+
+
+1;
+
+@@ pm6
+use v6;
+unit class {{ name }};
+
+
+@@ t
+use strict;
+use warnings;
+use Test::More;
+
+
+done_testing;
+
+@@ t6
+use v6;
+use Test;
+
+
+done-testing;
 
 @@ java
 import java.util.*;
@@ -115,9 +153,10 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.14.0;
+use 5.22.0;
 use warnings;
 use utf8;
+use experimental qw(postderef signatures);
 
 
 @@ p6
@@ -191,9 +230,10 @@ import os
 if os.path.isfile(os.path.expanduser(env.ssh_config_path)):
     env.use_ssh_config = True
 
+# fab -H localhost hello:msg="another msg"
 @task
-def hello():
-    run("echo {msg}".format(msg="hello"))
+def hello(msg='test'):
+    run("echo {msg}".format(msg=msg))
 
 @@ Dockerfile
 FROM ubuntu:14.04
@@ -209,3 +249,33 @@ RUN env DEBIAN_FRONTEND=noninteractive \
 RUN env DEBIAN_FRONTEND=noninteractive \
     apt-get install -y build-essential wget tar git bzip2 curl libssl-dev
 RUN apt-get clean -y
+
+@@ CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
+PROJECT ({{ name }})
+
+SET (VERSION_MAJOR 1)
+SET (VERSION_MINOR 0)
+
+CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/config.hpp.in" "${PROJECT_BINARY_DIR}/config.hpp")
+
+# overwrite MY_PREFIX by `cmake -DMY_PREFIX=foo .`
+if (NOT DEFINED MY_PREFIX)
+  SET (MY_PREFIX "$ENV{HOME}/local")
+endif ()
+INCLUDE_DIRECTORIES ("${MY_PREFIX}/include")
+SET (CMAKE_LIBRARY_PATH "${MY_PREFIX}/lib")
+
+FILE (GLOB SOURCE_FILES src/*.cpp src/*.c)
+
+SET (WARNING_FLAGS "-Wall -Wextra -Werror")
+SET (CMAKE_C_FLAGS   "-O2 -g ${WARNING_FLAGS} ${CMAKE_C_FLAGS}")
+SET (CMAKE_CXX_FLAGS "-O2 -g ${WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+ADD_EXECUTABLE ({{ name }} ${SOURCE_FILES})
+# or
+# ADD_LIBRARY ({{ name }} ${SOURCE_FILES})
+
+# example of linking library
+# FIND_LIBRARY (ATS_LIBRARY atscppapi REQUIRED)
+# TARGET_LINK_LIBRARIES (main ${ATS_LIBRARY})
