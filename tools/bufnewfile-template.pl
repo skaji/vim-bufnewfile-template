@@ -167,7 +167,8 @@ use v6;
 @@ c
 #include <stdio.h>
 
-int main(int /*argc*/, char * /*argv*/ []) {
+/* int main(int argc, char *argv[]) { */
+int main(void) {
 
   return 0;
 }
@@ -177,7 +178,7 @@ int main(int /*argc*/, char * /*argv*/ []) {
 #include <iostream>
 using namespace std;
 
-int main(int /*argc*/, char * /*argv*/ []) {
+int main(int /*argc*/, char */*argv*/[]) {
 
   return 0;
 }
@@ -202,15 +203,6 @@ int main(int /*argc*/, char * /*argv*/ []) {
 
 </body>
 </html>
-
-@@ t
-use strict;
-use warnings;
-use utf8;
-use Test::More;
-
-
-done_testing;
 
 @@ rb
 #!/usr/bin/env ruby
