@@ -153,10 +153,9 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.22.0;
+use 5.22.1;
 use warnings;
-use utf8;
-use experimental qw(postderef signatures);
+use experimental qw/ postderef signatures /;
 
 
 @@ p6
