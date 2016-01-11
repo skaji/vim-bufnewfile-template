@@ -66,10 +66,10 @@ sub template {
 sub pm {
     my $file = shift;
     $file = glob $file; # resolve ~
-    $file = abs_path($file);
+    my $type = $file =~ /pm6$/ ? "pm6" : "pm";
+    $file = abs_path($file) || $file;
     $file =~ s{.*/lib/}{} or $file =~ s{.*/([^/]+)}{$1};
     $file =~ s{/}{::}g;
-    my $type = $file =~ /pm6$/ ? "pm6" : "pm";
     $file =~ s{\.pm6?$}{};
     template($type => { name => $file });
 }
