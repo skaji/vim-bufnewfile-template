@@ -153,9 +153,9 @@ public class Main {
 
 @@ pl
 #!/usr/bin/env perl
-use 5.22.1;
+use 5.24.0;
 use warnings;
-use experimental qw/ postderef signatures /;
+use experimental 'signatures';
 
 
 @@ p6
