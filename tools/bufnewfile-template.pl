@@ -107,6 +107,17 @@ sub cmake {
 
 __DATA__
 
+@@ go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("hello")
+}
+
 @@ h
 #ifndef {{ name }}
 #define {{ name }}
