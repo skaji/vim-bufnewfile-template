@@ -12,7 +12,6 @@ my %lookup = (
     h   => \&h,
     hpp => \&h,
     t   => \&t,
-    "CMakeLists.txt" => \&cmake,
 );
 
 main(@ARGV); exit;
@@ -99,12 +98,6 @@ sub h {
     template("h" => { name => "${basename}_${suffix}_"});
 }
 
-sub cmake {
-    my $file = shift;
-    my $dir = basename( dirname( abs_path($file) ) );
-    template( "CMakeLists.txt" => { name => $dir } );
-}
-
 __DATA__
 
 @@ go
@@ -177,20 +170,19 @@ use v6;
 @@ c
 #include <stdio.h>
 
-/* int main(int argc, char *argv[]) { */
-int main(void) {
+int main(int argc, char *argv[]) {
 
   return 0;
 }
 
 @@ cpp
-#include <string>
 #include <iostream>
-#include <vector>
 #include <map>
+#include <string>
+#include <vector>
 using namespace std;
 
-int main(int /*argc*/, char * /*argv*/ []) {
+int main(int argc, char *argv[]) {
 
   return 0;
 }
@@ -236,48 +228,3 @@ if os.path.isfile(os.path.expanduser(env.ssh_config_path)):
 @task
 def hello(msg='test'):
     run("echo {msg}".format(msg=msg))
-
-@@ Dockerfile
-FROM ubuntu:14.04
-MAINTAINER Shoichi Kaji <skaji@cpan.org>
-
-RUN locale-gen en_US en_US.UTF-8
-RUN ln -sf /usr/share/zoneinfo/Japan /etc/localtime
-RUN dpkg-reconfigure locales
-
-RUN apt-get update -y
-RUN env DEBIAN_FRONTEND=noninteractive \
-    apt-get upgrade -y
-RUN env DEBIAN_FRONTEND=noninteractive \
-    apt-get install -y build-essential wget tar git bzip2 curl libssl-dev
-RUN apt-get clean -y
-
-@@ CMakeLists.txt
-CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
-PROJECT ({{ name }})
-
-SET (VERSION_MAJOR 1)
-SET (VERSION_MINOR 0)
-
-CONFIGURE_FILE ("${PROJECT_SOURCE_DIR}/config.hpp.in" "${PROJECT_BINARY_DIR}/config.hpp")
-
-# overwrite MY_PREFIX by `cmake -DMY_PREFIX=foo .`
-if (NOT DEFINED MY_PREFIX)
-  SET (MY_PREFIX "$ENV{HOME}/local")
-endif ()
-INCLUDE_DIRECTORIES ("${MY_PREFIX}/include")
-SET (CMAKE_LIBRARY_PATH "${MY_PREFIX}/lib")
-
-FILE (GLOB SOURCE_FILES src/*.cpp src/*.c)
-
-SET (WARNING_FLAGS "-Wall -Wextra -Werror")
-SET (CMAKE_C_FLAGS   "-O2 -g ${WARNING_FLAGS} ${CMAKE_C_FLAGS}")
-SET (CMAKE_CXX_FLAGS "-O2 -g ${WARNING_FLAGS} ${CMAKE_CXX_FLAGS}")
-
-ADD_EXECUTABLE ({{ name }} ${SOURCE_FILES})
-# or
-# ADD_LIBRARY ({{ name }} ${SOURCE_FILES})
-
-# example of linking library
-# FIND_LIBRARY (ATS_LIBRARY atscppapi REQUIRED)
-# TARGET_LINK_LIBRARIES (main ${ATS_LIBRARY})
