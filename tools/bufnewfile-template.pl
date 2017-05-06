@@ -7,17 +7,18 @@ use Cwd 'abs_path';
 binmode STDOUT, ":utf8";
 
 my %lookup = (
-    pm  => \&pm,
-    pm6 => \&pm,
-    h   => \&h,
-    hpp => \&h,
-    t   => \&t,
+    ".pm"  => \&pm,
+    ".pm6" => \&pm,
+    ".h"   => \&h,
+    ".hpp" => \&h,
+    ".t"   => \&t,
+    ".go"  => \&go,
 );
 
 main(@ARGV); exit;
 
 sub main {
-    ( my $file = shift ) =~ /\.([^.]+)$/;
+    ( my $file = shift ) =~ /(\.[^.]+)$/;
     my $suffix = $1 || "";
     my $basename = basename $file;
 
@@ -65,7 +66,7 @@ sub template {
 sub pm {
     my $file = shift;
     $file = glob $file; # resolve ~
-    my $type = $file =~ /pm6$/ ? "pm6" : "pm";
+    my $type = $file =~ /\.pm6$/ ? ".pm6" : ".pm";
     $file = abs_path($file) || $file;
     $file =~ s{.*/lib/}{} or $file =~ s{.*/([^/]+)}{$1};
     $file =~ s{/}{::}g;
@@ -86,7 +87,7 @@ sub t {
             $pwd = abs_path("$pwd/..");
         }
     }
-    get_data_section( $is_perl6 ? "t6" : "t" );
+    get_data_section( $is_perl6 ? ".t6" : ".t" );
 }
 
 sub h {
@@ -95,12 +96,28 @@ sub h {
     $basename =~ s/\.([^.]+)$//;
     my $suffix = ($1 || "") eq "h" ? "H" : "HPP";
     $basename = uc $basename;
-    template("h" => { name => "${basename}_${suffix}_"});
+    template(".h" => { name => "${basename}_${suffix}_"});
+}
+
+sub go {
+    my $file = shift;
+    my $dir = dirname $file;
+    my $default = get_data_section(".go");
+    return $default unless -d $dir;
+    opendir my $dh, $dir or die;
+    my @go = sort grep { $_ =~ /\.go$/ } readdir $dh;
+    return $default unless @go;
+    my $first = do { open my $fh, "<", $go[0]; <$fh> };
+    if ($first =~ /^package/) {
+        return $first;
+    } else {
+        return $default;
+    }
 }
 
 __DATA__
 
-@@ go
+@@ .go
 package main
 
 import (
@@ -111,14 +128,14 @@ func main() {
 	fmt.Println("hello")
 }
 
-@@ h
+@@ .h
 #ifndef {{ name }}
 #define {{ name }}
 
 
 #endif
 
-@@ pm
+@@ .pm
 package {{ name }};
 use strict;
 use warnings;
@@ -126,12 +143,12 @@ use warnings;
 
 1;
 
-@@ pm6
+@@ .pm6
 use v6;
 unit class {{ name }};
 
 
-@@ t
+@@ .t
 use strict;
 use warnings;
 use Test::More;
@@ -139,14 +156,14 @@ use Test::More;
 
 done_testing;
 
-@@ t6
+@@ .t6
 use v6;
 use Test;
 
 
 done-testing;
 
-@@ java
+@@ .java
 import java.util.*;
 
 public class Main {
@@ -155,19 +172,18 @@ public class Main {
   }
 }
 
-@@ pl
+@@ .pl
 #!/usr/bin/env perl
-use 5.24.0;
+use strict;
 use warnings;
-use experimental 'signatures';
 
 
-@@ p6
+@@ .p6
 #!/usr/bin/env perl6
 use v6;
 
 
-@@ c
+@@ .c
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
@@ -175,7 +191,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-@@ cpp
+@@ .cpp
 #include <iostream>
 #include <map>
 #include <string>
@@ -187,7 +203,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-@@ html
+@@ .html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -208,11 +224,11 @@ int main(int argc, char *argv[]) {
 </body>
 </html>
 
-@@ rb
+@@ .rb
 #!/usr/bin/env ruby
 # coding: utf-8
 
-@@ py
+@@ .py
 #!/usr/bin/env python
 # coding: utf-8
 
