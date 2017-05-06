@@ -106,6 +106,7 @@ sub go {
     return $default unless -d $dir;
     opendir my $dh, $dir or die;
     my @go = sort grep { $_ =~ /\.go$/ } readdir $dh;
+    closedir $dh;
     return $default unless @go;
     my $first = do { open my $fh, "<", $go[0]; <$fh> };
     if ($first =~ /^package/) {
@@ -120,12 +121,7 @@ __DATA__
 @@ .go
 package main
 
-import (
-	"fmt"
-)
-
 func main() {
-	fmt.Println("hello")
 }
 
 @@ .h
