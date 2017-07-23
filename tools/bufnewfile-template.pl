@@ -104,7 +104,7 @@ sub go {
     my $dir = dirname $file;
     my $default = get_data_section(".go");
     return $default unless -d $dir;
-    opendir my $dh, $dir or die;
+    opendir my ($dh), $dir or die;
     my @go = sort grep { $_ =~ /\.go$/ } readdir $dh;
     closedir $dh;
     return $default unless @go;
@@ -140,7 +140,7 @@ use warnings;
 1;
 
 @@ .pm6
-use v6;
+use v6.c;
 unit class {{ name }};
 
 
@@ -153,7 +153,7 @@ use Test::More;
 done_testing;
 
 @@ .t6
-use v6;
+use v6.c;
 use Test;
 
 
@@ -176,7 +176,7 @@ use warnings;
 
 @@ .p6
 #!/usr/bin/env perl6
-use v6;
+use v6.c;
 
 
 @@ .c
