@@ -96,7 +96,7 @@ sub h {
     $basename =~ s/\.([^.]+)$//;
     my $suffix = ($1 || "") eq "h" ? "H" : "HPP";
     $basename = uc $basename;
-    template(".h" => { name => "${basename}_${suffix}_"});
+    template(".h" => { name => "${basename}_${suffix}"});
 }
 
 sub go {
@@ -182,7 +182,7 @@ use v6.c;
 @@ .c
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
+int main(/* int argc, char *argv[] */) {
 
   return 0;
 }
@@ -190,11 +190,12 @@ int main(int argc, char *argv[]) {
 @@ .cpp
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 using namespace std;
 
-int main(int argc, char *argv[]) {
+int main(/* int argc, char *argv[] */) {
 
   return 0;
 }
