@@ -109,7 +109,7 @@ sub go {
     my @go = sort grep { $_ =~ /\.go$/ } readdir $dh;
     closedir $dh;
     return $default unless @go;
-    my $first = do { open my $fh, "<", catfle($dir, $go[0]) or die; <$fh> };
+    my $first = do { open my $fh, "<", catfile($dir, $go[0]) or die; <$fh> };
     if ($first =~ /^package/) {
         return $first;
     } else {
