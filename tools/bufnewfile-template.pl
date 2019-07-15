@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use utf8;
 use File::Basename qw(basename dirname);
+use File::Spec::Functions qw(catfile);
 use Cwd 'abs_path';
 binmode STDOUT, ":utf8";
 
@@ -108,7 +109,7 @@ sub go {
     my @go = sort grep { $_ =~ /\.go$/ } readdir $dh;
     closedir $dh;
     return $default unless @go;
-    my $first = do { open my $fh, "<", $go[0]; <$fh> };
+    my $first = do { open my $fh, "<", catfle($dir, $go[0]) or die; <$fh> };
     if ($first =~ /^package/) {
         return $first;
     } else {
@@ -121,7 +122,38 @@ __DATA__
 @@ .go
 package main
 
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+)
+
 func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "OK")
+	})
+	server := &http.Server{Addr: ":8080", Handler: mux}
+
+	done := make(chan struct{})
+	go func() {
+		sig := make(chan os.Signal)
+		signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
+		<-sig
+		if err := server.Shutdown(context.Background()); err != nil {
+			log.Printf("HTTP server Shutdown: %v", err)
+		}
+		close(done)
+	}()
+
+	if err := server.ListenAndServe(); err != http.ErrServerClosed {
+		log.Printf("HTTP server ListenAndServe: %v", err)
+	}
+	<-done
 }
 
 @@ .h
