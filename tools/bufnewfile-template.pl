@@ -122,38 +122,7 @@ __DATA__
 @@ .go
 package main
 
-import (
-	"context"
-	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-)
-
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "OK")
-	})
-	server := &http.Server{Addr: ":8080", Handler: mux}
-
-	done := make(chan struct{})
-	go func() {
-		sig := make(chan os.Signal)
-		signal.Notify(sig, syscall.SIGTERM, syscall.SIGINT)
-		<-sig
-		if err := server.Shutdown(context.Background()); err != nil {
-			log.Printf("HTTP server Shutdown: %v", err)
-		}
-		close(done)
-	}()
-
-	if err := server.ListenAndServe(); err != http.ErrServerClosed {
-		log.Printf("HTTP server ListenAndServe: %v", err)
-	}
-	<-done
 }
 
 @@ .h
@@ -238,6 +207,7 @@ int main(/* int argc, char *argv[] */) {
 <head>
   <meta charset="utf-8">
   <title>hoge</title>
+  <link rel="icon" href="data:,">
   <!--
   <script src="script.js"></script>
   <link href="css.css" rel="stylesheet" />
