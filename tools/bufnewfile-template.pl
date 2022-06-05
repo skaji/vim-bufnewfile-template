@@ -171,8 +171,8 @@ public class Main {
 
 @@ .pl
 #!/usr/bin/env perl
-use strict;
-use warnings;
+use v5.36;
+use experimental qw(builtin defer for_list try);
 
 
 @@ .p6
