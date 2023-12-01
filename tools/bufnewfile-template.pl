@@ -13,7 +13,7 @@ my %lookup = (
     ".h"   => \&h,
     ".hpp" => \&h,
     ".t"   => \&t,
-    ".go"  => \&go,
+    # ".go"  => \&go,
 );
 
 main(@ARGV); exit;
@@ -118,12 +118,6 @@ sub go {
 }
 
 __DATA__
-
-@@ .go
-package main
-
-func main() {
-}
 
 @@ .h
 #ifndef {{ name }}
@@ -243,3 +237,14 @@ if os.path.isfile(os.path.expanduser(env.ssh_config_path)):
 @task
 def hello(msg='test'):
     run("echo {msg}".format(msg=msg))
+
+@@ app.psgi
+use v5.38;
+use Plack::Request;
+
+my $app = sub ($env) {
+    my $req = Plack::Request->new($env);
+    my $content = $req->content;
+    say $content;
+    [ 200, [], ["OK\n"] ];
+};
