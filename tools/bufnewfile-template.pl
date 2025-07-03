@@ -165,7 +165,7 @@ public class Main {
 
 @@ .pl
 #!/usr/bin/env perl
-use v5.40;
+use v5.42;
 use experimental qw(builtin class defer);
 
 
