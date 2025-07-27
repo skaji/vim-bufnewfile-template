@@ -166,7 +166,7 @@ public class Main {
 @@ .pl
 #!/usr/bin/env perl
 use v5.42;
-use experimental qw(builtin class defer);
+use experimental qw(builtin defer keyword_all keyword_any);
 
 
 @@ .p6
