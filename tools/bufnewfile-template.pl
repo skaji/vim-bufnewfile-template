@@ -128,8 +128,9 @@ __DATA__
 
 @@ .pm
 package {{ name }};
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
 
 
 1;
@@ -140,8 +141,10 @@ unit class {{ name }};
 
 
 @@ .t
-use strict;
+use v5.24;
 use warnings;
+use experimental qw(lexical_subs signatures);
+
 use Test::More;
 
 
@@ -166,7 +169,7 @@ public class Main {
 @@ .pl
 #!/usr/bin/env perl
 use v5.42;
-use experimental qw(builtin defer keyword_all keyword_any);
+use experimental qw(signature_named_parameters builtin defer keyword_all keyword_any);
 
 
 @@ .p6
