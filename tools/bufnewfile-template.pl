@@ -168,7 +168,7 @@ public class Main {
 
 @@ .pl
 #!/usr/bin/env perl
-use v5.42;
+use v5.44;
 use experimental qw(signature_named_parameters builtin defer keyword_all keyword_any);
 
 
